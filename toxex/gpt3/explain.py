@@ -19,7 +19,8 @@ from toxex.utils import (
     set_seed,
     vec_to_target_name_and_toxicity_type, 
     select_demos_group_dataset,
-    select_demos
+    select_demos,
+    format_prompt
 )
 from toxex.gpt3.base import BasePredictor
 
@@ -75,15 +76,15 @@ class Explainer(BasePredictor):
         return json.load(open(fname, 'r'))
 
     def predict(self, text: Optional[str], target_group: List[int], gen_dict: dict,
-                toxicity: int, id: str = None, dataset: str = None, dry_run: bool = True,
+                toxicity: int, id: str = None, dataset: str = None,
                 **kwargs) -> dict:
 
         result = {
+            'id': id,
             'explanation': None,
             'prompt': None,
             'target_group_str': None, 
             'toxicity_type': None,
-            'id': id,
             'demos': None,
             'dataset': dataset,
             'prompt_type': self._prompt_type,
@@ -98,13 +99,13 @@ class Explainer(BasePredictor):
         
         # Call the gpt-3 API
         gen_dict['prompt'] = prompt_str
-        response = self.call_openai(gen_dict, dry_run=dry_run)
+        response = self.call_openai(gen_dict, dry_run=self._dry_run)
 
         result['prompt'] = prompt_str
         result['target_group_str'] = tgt_group
         result['toxicity_type'] = toxicity_type
         result['demos'] = demos
-        result['explanation'] = response['text_response'].strip('\n')
+        result['explanation'] = response['text_response'].strip('\n').strip()
 
         # For backward compatability
         result['text_response'] = result['explanation']
@@ -121,7 +122,7 @@ class Explainer(BasePredictor):
         prompt_base = self._prompt_base
         prompt_core = prompt_base.replace('<TOXICITY_TYPE>', 'offensive')
         instruct = prompt_core.rstrip(' to')
-        prompt_str = instruct + ':\n\n ' + text
+        prompt_str = format_prompt(instruct + ':\n\n ' + text)
         demos = None
 
         return prompt_str, tgt_group, toxicity_type, demos
@@ -142,7 +143,7 @@ class Explainer(BasePredictor):
         prompt_base = self._prompt_base
         prompt_core = prompt_base.replace('<TOXICITY_TYPE>', toxicity_type)
         instruct = f'{prompt_core} {tgt_group.strip()}' if tgt_group != 'other' else prompt_core.rstrip(' to')
-        prompt_str = instruct + ':\n\n ' + text
+        prompt_str = format_prompt(instruct + ':\n\n ' + text)
         demos = None
 
         return prompt_str, tgt_group, toxicity_type, demos
@@ -182,6 +183,7 @@ class Explainer(BasePredictor):
             if tgt_group != 'other' else prompt_core.rstrip(' to')
         sample_prompt_str = f'Example {self._n_demos+1}: {instruct}: {text}\nExplanation {self._n_demos+1}:'
         prompt_str = '\n\n'.join([self._prompt_preamble, demos_str, sample_prompt_str])
+        prompt_str = format_prompt(prompt_str)
 
         assertion_checks(target_mentions, toxicity_types, demos, prompt_str, self._n_demos)
 

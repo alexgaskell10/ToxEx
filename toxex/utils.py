@@ -8,10 +8,23 @@ import pandas as pd
 import jsonlines
 import tqdm
 from datetime import datetime
+from string import punctuation
 
 
 def dt_now():
     return datetime.today().strftime('%Y-%m-%d-%H-%M-%S')
+
+
+def format_prompt(prompt):
+    ''' Ensure prompts end with ".\n". This prevents the 
+        completion from continuing the prompt rather than
+        responding to it.
+    '''
+    prompt = prompt.strip()
+    if not prompt[-1] in punctuation:
+        prompt += '.'
+    prompt += '\n'
+    return  prompt
 
 
 def set_seed(seed, n_gpu):
@@ -106,11 +119,14 @@ def vec_to_target_name_and_toxicity_type(vec: List[int], target_map: List[str], 
     return target_mentions, toxicity_types
 
 
-def read_jsonl(fname, fields):
+def read_jsonl(fname, fields=None):
     """Reads a given .jsonl file for inference."""
     import jsonlines, tqdm
     data = []
     with jsonlines.open(fname) as f:
         for line in tqdm.tqdm(f, unit='line'):
-            data.append({k: line[k] for k in fields})
+            if fields:
+                data.append({k: line[k] for k in fields})
+            else:
+                data.append(line)
     return data

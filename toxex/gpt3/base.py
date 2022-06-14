@@ -21,15 +21,13 @@ from toxex.utils import (
 )
 
 
-set_seed(1, 1)
-
-
 class BasePredictor:
     def __init__(self, gen_dict: dict = None, prompt_base: str = None,
-                api_key: str = None, **kwargs):
+                api_key: str = None, dry_run: bool = True, **kwargs):
         self._gen_dict = gen_dict
         self._api_key = api_key
         self._prompt_base = prompt_base
+        self._dry_run = dry_run
 
     def predict(self, *args, **kwargs):
         raise NotImplementedError
