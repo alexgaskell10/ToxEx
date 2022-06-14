@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# AG additions
+data/*
+.vscode
+scripts/mturk/retain_worker_ids.txt
+scripts/mturk/turker_mean_scores.csv
