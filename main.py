@@ -120,6 +120,7 @@ def postprocess(file):
     df['prompt_id'] = df['prompt_base'].apply(lambda x: prompts.index(x))
     df['toxicity'] = df[['explanation', 'prompt_base', 'id']].apply(
         lambda x: parse_answer(x, prompts), axis=1)
+    df['uid'] = df['id'] + '::' + df['prompt_id'].astype(str)
 
     null_rows = df[df['toxicity'] == -1]
     if len(null_rows):
@@ -136,15 +137,26 @@ def postprocess(file):
         'toxicity': 'pred_label_id',
         'label': 'bin_label_id',      
     }
-    input_cols = ['id', 'text', 'prompt_base']
+    input_cols = ['uid', 'text', 'prompt_base']
     df_cxpy = df[['dataset','prompt_id']+list(col_map)].rename(columns=col_map)
     df_cxpy['input'] = df[input_cols].to_dict(orient='records')
 
     # Write outputs
-    outdir = Path(str(file).rstrip('.jsonl'))
+    outdir = Path(str(file).replace('.jsonl',''))
     print('Writing outputs to', outdir)
     outdir.mkdir(exist_ok=True)
     write_jsonl_into_file(df_cxpy.to_dict(orient='records'), Path(*file.parts[:2],file.stem,'all.jsonl'))
+    
+    for dset in df_cxpy['dataset'].drop_duplicates().values:
+        outpath = outdir / f'{dset}.jsonl'
+        rows = df_cxpy[(df_cxpy['dataset'] == dset)]
+        write_jsonl_into_file(rows.to_dict(orient='records'), outpath)
+    
+    for pid in df_cxpy['prompt_id'].drop_duplicates().values:
+        outpath = outdir / f'pid_{pid}.jsonl'
+        rows = df_cxpy[(df_cxpy['prompt_id'] == pid)]
+        write_jsonl_into_file(rows.to_dict(orient='records'), outpath)
+    
     for dset,pid in df_cxpy[['dataset', 'prompt_id']].drop_duplicates().values:
         outpath = outdir / f'{dset}-pid_{pid}.jsonl'
         rows = df_cxpy[(df_cxpy['dataset'] == dset) & (df_cxpy['prompt_id'] == pid)]
@@ -182,6 +194,7 @@ def binary():
     postprocess = True
     exclude_files = [
         '/data2/ag/home/ToxEx/data/binary/aaa-2022-06-09-22-12-58.jsonl',
+        '/data2/ag/home/ToxEx/data/binary/aaa-2022-06-10-09-51-35.jsonl',
     ]
 
     data = load_data(fnames, fields, max_samples, exclude_files=exclude_files)
@@ -191,7 +204,7 @@ def binary():
             api_key=api_key,
             gen_dict=gen_dict,
             prompt_base=prompt,
-            dry_run=False,
+            dry_run=True,
         )
 
         results = []
@@ -279,6 +292,6 @@ def explain():
 
 
 if __name__ == '__main__':
-    binary()
+    # binary()
     # explain()
-    # postprocess('data/binary/2022-06-09-20-27-59.jsonl')
+    postprocess('data/binary/aaa-2022-06-10-09-51-35-all.jsonl')
