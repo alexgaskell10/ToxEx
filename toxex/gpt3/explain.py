@@ -194,12 +194,3 @@ def assertion_checks(target_mentions, toxicity_types, demos, prompt_str, n_demos
     assert len(target_mentions) == len(toxicity_types)
     assert len(demos['id'].unique()) == len(demos)
     assert all(prompt_str.count(f'Explanation {i+1}')==1 for i in range(n_demos))
-
-
-
-'''
-To do:
-- Ability to customize which type of prompts we produce
-- Load seed annotations if required (and specify threshold)
-- Integrate returned result into the data row and align with previous format
-'''
