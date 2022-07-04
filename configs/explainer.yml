@@ -1,0 +1,15 @@
+gpt_tgt_group_mapping_fname: 'resources/student_name_map.json'
+api_key: null
+target_group_threshold: 0.85
+demos_fname: 'resources/demos.jsonl'
+demos_threshold: 0.9
+
+gpt_opts:
+  engine: 'text-davinci-002'
+  temperature: 0.9
+  max_tokens: 512
+  top_p: 1
+  frequency_penalty: 0
+  presence_penalty: 0.25
+  stop: '\\n'
+  n: 1

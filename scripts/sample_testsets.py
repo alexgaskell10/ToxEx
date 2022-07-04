@@ -20,7 +20,7 @@ def write_jsonl_into_file(data: List[dict], fname: str) -> None:
 
 
 datasets = ['sbf', 'jigsaw-task2', 'measuring_hate_speech']
-data_base_path = '/vol/bitbucket/aeg19/ag/datasets/data/XXX/jsonl.cxpr.splits/test.jsonl'
+data_base_path = '/data2/ag/home/ag/datasets/data/XXX/jsonl.cxpr.splits/test.jsonl'
 n_samples = 512
 outdir_base = Path('data/test_samples')
 outdir_base.mkdir(exist_ok=True)

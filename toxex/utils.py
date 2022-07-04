@@ -130,3 +130,37 @@ def read_jsonl(fname, fields=None):
             else:
                 data.append(line)
     return data
+
+
+def load_data(fnames, fields, max_samples, exclude_files=None, require_target_group=False):
+    if exclude_files:
+        exclude_ids = []
+        for file in exclude_files:
+            # TODO: maybe use something other than padas here
+            exclude_ids.extend(pd.read_json(file, orient='records', lines=True)['id'].tolist())
+
+    # Load data
+    data = []
+    for dset, fname in fnames.items():
+        rows = [{**row, 'dataset': dset} for row in read_jsonl(fname, fields)]
+
+        if require_target_group:
+            # Exclude samples with no target group
+            rows = [row for row in rows if not all(i==-1 for i in row['target_group'])]
+
+        # Add dataset annotation to id
+        rows = [{**row, 'id': dset + '-' + str(row['id'])} for row in rows]
+
+        if exclude_files:
+            # Exclude rows from seed set by matching on ids
+            rows = [r for r in rows if r['id'] not in exclude_ids]
+
+        random.shuffle(rows)
+        if max_samples > 0:
+            rows = rows[:max_samples]
+        data.extend(rows)
+    return data
+
+
+def read_txt_lines(fname):
+    return [x.rstrip('\n') for x in open(fname).readlines()]
