@@ -13,3 +13,4 @@ gpt_opts:
   presence_penalty: 0.25
   stop: '\\n'
   n: 1
+  logprobs: 5

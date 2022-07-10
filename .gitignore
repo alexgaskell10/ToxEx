@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # AG additions
-data/*
+data
 .vscode
 scripts/mturk/retain_worker_ids.txt
 scripts/mturk/turker_mean_scores.csv

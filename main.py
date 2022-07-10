@@ -75,8 +75,8 @@ def binary():
 def explain():
     fnames = {
         'sbf': '/data2/ag/home/ag/datasets/data-aux/sbf/jsonl.cxpr.splits/test.jsonl',
-        # 'unib': '/data2/ag/home/ag/datasets/data-aux/jigsaw-task2/jsonl.cxpr.splits/train.jsonl',
-        # 'mhs': '/data2/ag/home/ag/datasets/data-aux/measuring_hate_speech/jsonl.cxpr.splits/test.jsonl',
+        'unib': '/data2/ag/home/ag/datasets/data-aux/jigsaw-task2/jsonl.cxpr.splits/train.jsonl',
+        'mhs': '/data2/ag/home/ag/datasets/data-aux/measuring_hate_speech/jsonl.cxpr.splits/test.jsonl',
     }
     outfile = Path(f'data/generations/{dt_now()}.jsonl')
     outfile.parent.mkdir(exist_ok=True)
@@ -91,12 +91,14 @@ def explain():
         args.demos_fname,
         # '/data2/ag/home/ToxEx/data/generations/2022-06-07-10-36-32.jsonl',
     ]
-    data = load_data(fnames, fields, max_samples, exclude_files, require_target_group=True)
+    include_files = [
+        ('/data2/ag/home/ToxEx/data/auto_eval/logprobs_verify/df.csv', 'id'),
+    ]
+    data = load_data(fnames, fields, max_samples, exclude_files, include_files, require_target_group=True)
 
-    # prompt_types = [1,2,3]
-    prompt_types = [3]
+    prompt_types = [1,2,3]
     for prompt_type in prompt_types:
-        be = Explainer(**vars(args), prompt_type=prompt_type, dry_run=True)
+        be = Explainer(**vars(args), prompt_type=prompt_type, dry_run=False)
 
         results = []
         for d in tqdm(data):
@@ -107,7 +109,7 @@ def explain():
                 tgt_groups_names = tgt_groups_names,
                 tgt_groups_scores = d['target_group'],
             )
-            output = {**d, **res}
+            output = {**d, **res, 'uid': f"{d['id']}::{prompt_type}"}
             write_jsonl_into_file([output], outfile, mode='a', do_tqdm=False)
             results.append(output)
 

@@ -33,7 +33,7 @@ def set_seed(seed, n_gpu):
 set_seed(1, 1)
 
 Result = namedtuple(
-    'Result', 'explanation prompt target_group toxicity'
+    'Result', 'explanation prompt target_group toxicity logprobs response'
 )
 
 
@@ -76,7 +76,8 @@ class Explainer:
         # Currently we only explain toxic samples
         if not toxicity:
             return Result(
-                explanation=None, prompt=None, target_group=None, toxicity=None
+                explanation=None, prompt=None, target_group=None,
+                toxicity=None, logprobs=None, response=None,
             )._asdict()
 
         # Select the most probable target group
@@ -98,6 +99,8 @@ class Explainer:
             prompt=prompt_str,
             target_group=group_for_prompt,
             toxicity=toxicity_type,
+            logprobs=response['logprobs'],
+            response=response,
         )._asdict()
 
     def _build_prompt(self, text, *args):
@@ -154,6 +157,9 @@ class Explainer:
         jdata['response_time'] = dur
         jdata['prompt'] = self._gpt_opts.pop('prompt')
         jdata['gpt_opts'] = self._gpt_opts
+        jdata['logprobs'] = response['choices'][0]['logprobs']['token_logprobs'][:len(jdata['text_response'].split())+2] \
+            if len(response['choices']) == 1 and not self._dry_run else None
+
         return jdata
 
     def _select_demos(self, target_group, toxicity_type):

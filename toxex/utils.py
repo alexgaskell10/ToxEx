@@ -132,12 +132,17 @@ def read_jsonl(fname, fields=None):
     return data
 
 
-def load_data(fnames, fields, max_samples, exclude_files=None, require_target_group=False):
+def load_data(fnames, fields, max_samples, exclude_files=None, include_files=None, require_target_group=False):
+
     if exclude_files:
         exclude_ids = []
         for file in exclude_files:
-            # TODO: maybe use something other than padas here
             exclude_ids.extend(pd.read_json(file, orient='records', lines=True)['id'].tolist())
+
+    if include_files:
+        include_ids = []
+        for file, id_col in include_files:
+            include_ids.extend(pd.read_csv(file)[id_col].drop_duplicates().tolist())
 
     # Load data
     data = []
@@ -155,10 +160,15 @@ def load_data(fnames, fields, max_samples, exclude_files=None, require_target_gr
             # Exclude rows from seed set by matching on ids
             rows = [r for r in rows if r['id'] not in exclude_ids]
 
-        random.shuffle(rows)
-        if max_samples > 0:
-            rows = rows[:max_samples]
+        if include_files:
+            rows = [r for r in rows if r['id'] in include_ids]
+        else:
+            random.shuffle(rows)
+            if max_samples > 0:
+                rows = rows[:max_samples]
+        
         data.extend(rows)
+
     return data
 
 
