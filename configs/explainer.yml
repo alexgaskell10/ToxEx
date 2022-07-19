@@ -1,16 +1,60 @@
-gpt_tgt_group_mapping_fname: 'resources/student_name_map.json'
-api_key: null
-target_group_threshold: 0.85
-demos_fname: 'resources/demos.jsonl'
-demos_threshold: 0.9
+model_args:
+  # These mirror the args from conteX-app
+  gpt_tgt_group_mapping_fname: 'resources/student_name_map.json'
+  api_key: null
+  target_group_threshold: 0.85
+  demos_fname: 'resources/demos.jsonl'
+  demos_threshold: 0.9
 
-gpt_opts:
-  engine: 'text-davinci-002'
-  temperature: 0.9
-  max_tokens: 512
-  top_p: 1
-  frequency_penalty: 0
-  presence_penalty: 0.25
-  stop: '\\n'
-  n: 1
-  logprobs: 5
+  gpt_opts:
+    engine: 'text-davinci-002'
+    temperature: 0.9
+    max_tokens: 512
+    top_p: 1
+    frequency_penalty: 0
+    presence_penalty: 0.25
+    stop: '\\n'
+    n: 1
+    logprobs: 5
+  
+data_args:
+  # Files to read the instances from.
+  # NOTE: these should be from a folder jsonl.cxpr.gpt3.splits. 
+  # For SBF we took these from jsonl.cxpr.splits but going forward we will preprocess the gpt3 inputs differently
+  fnames:
+    # Should be a key: val pair to let us know what dataset prefix to add to the sample id to create a uid
+    # sbf: '/data2/ag/home/ag/datasets/data-aux/sbf/jsonl.cxpr.splits/test.jsonl',
+    unib: '/data2/ag/home/ag/datasets/data-aux/jigsaw-task2/jsonl.cxpr.gpt3.splits/train.jsonl'
+    mhs: '/data2/ag/home/ag/datasets/data-aux/measuring_hate_speech/jsonl.cxpr.gpt3.splits/test.jsonl'
+  
+  # The maximum number of samples to keep FOR EACH DATASET (set to -1 for all)
+  max_samples: 5
+  
+  # Which fields do we want to load from the jsonl data
+  fields: ['id', 'text', 'toxicity', 'target_group']
+  
+  # Specify sample ids we want to filter out
+  # Format: jsonl_fname: id fieldname
+  exclude_files:
+    # Filter out the demos
+    resources/demos.jsonl: id
+    # Filter out all the sbf samples we have generated for previously
+    /data2/ag/home/ag/experiments/gpt-3/sbf/gpt3_explanations_sbf_2022-04-19_08-51.jsonl: id
+
+  # Specify sample ids we explicity want to include when generating
+  # Format: csv_fname: id fieldname
+  include_files: null
+
+aux_args:
+  # File containing the names of the target groups (correctly ordered)
+  target_group_names_fname: 'resources/target_group_names.txt'
+
+  # Dir to save the generated responses
+  outdir: data/generations
+
+  # Which type of prompts do we want to generate for?
+  # Type 1 are the basic version
+  # Type 2 include toxicity type and target groups
+  # Type 3 include demos, toxicity type and target groups
+  prompt_types: [3]
+  

@@ -132,16 +132,47 @@ def read_jsonl(fname, fields=None):
     return data
 
 
-def load_data(fnames, fields, max_samples, exclude_files=None, include_files=None, require_target_group=False):
+def load_data(
+    fnames: dict, 
+    fields: list = ['id', 'text', 'toxicity', 'target_group'], 
+    max_samples: int = 10, 
+    exclude_files: list = None, 
+    include_files: list = None, 
+    require_target_group: bool =False
+):
+    ''' Function to load data from jsonl files. This includes functionality
+        to include / exclude sample ids.
 
+        :args:
+        - fnames: dict where the keys are the dataset prefix and the values
+        are jsonl files
+        - fields: list containing the string field names to load from jsonl
+        - max samples: the number of samples to return. Set to -1 to return all.
+        - include_files: sample ids within those from fnames that we want to
+        generate responses for. This is a dict where the keys are the csv file paths 
+        and the values are the corresponding fieldname of the ID field
+        - exclude_files: sample ids within those from fnames that DO NOT want to
+        generate responses for (e.g. to prevent duplicate generations). This is a 
+        dict where the keys are the jsonl file paths and the values are the 
+        corresponding fieldname of the ID field
+        - require_target_group: bool specifiying whether we want to filter out 
+        samples which do not have a gold target group
+
+        :returns:
+        - data: list of dicts
+    '''
     if exclude_files:
+        # How to filter out samples from generation based on their id
+        # (NOTE: these should include the relevant dataset prefix)
         exclude_ids = []
-        for file in exclude_files:
-            exclude_ids.extend(pd.read_json(file, orient='records', lines=True)['id'].tolist())
+        for file, id_col in exclude_files.items():
+            exclude_ids.extend(pd.read_json(file, orient='records', lines=True)[id_col].tolist())
 
     if include_files:
+        # How to specify a set of sample ids to include 
+        # (NOTE: these should include the relevant dataset prefix)
         include_ids = []
-        for file, id_col in include_files:
+        for file, id_col in include_files.items():
             include_ids.extend(pd.read_csv(file)[id_col].drop_duplicates().tolist())
 
     # Load data
@@ -153,7 +184,7 @@ def load_data(fnames, fields, max_samples, exclude_files=None, include_files=Non
             # Exclude samples with no target group
             rows = [row for row in rows if not all(i==-1 for i in row['target_group'])]
 
-        # Add dataset annotation to id
+        # Add dataset prefix to id to make a UID
         rows = [{**row, 'id': dset + '-' + str(row['id'])} for row in rows]
 
         if exclude_files:

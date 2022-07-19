@@ -18,10 +18,11 @@ from toxex.utils import (
 
 set_seed(1, 1)
 
-api_key = os.getenv("OPENAI_API_KEY")
-
 
 def binary():
+
+    api_key = os.getenv("OPENAI_API_KEY")
+
     fnames = {
         'sbf': '/data2/ag/home/ag/datasets/data/sbf/jsonl.cxpr.splits/test.jsonl',
         'unib': '/data2/ag/home/ag/datasets/data/jigsaw-task2/jsonl.cxpr.splits/test.jsonl',
@@ -72,7 +73,7 @@ def binary():
     print('Done')
 
 
-def explain():
+def explain_():
     fnames = {
         'sbf': '/data2/ag/home/ag/datasets/data-aux/sbf/jsonl.cxpr.splits/test.jsonl',
         'unib': '/data2/ag/home/ag/datasets/data-aux/jigsaw-task2/jsonl.cxpr.splits/train.jsonl',
@@ -82,7 +83,10 @@ def explain():
     outfile.parent.mkdir(exist_ok=True)
     print('Output will be written to:', outfile)
 
+    # Load config args
     args = argparse.Namespace(**yaml.load(open('configs/explainer.yml'), Loader=yaml.SafeLoader))
+
+    # Load target group names from file
     tgt_groups_names = read_txt_lines('resources/target_group_names.txt')
 
     fields = ['id', 'text', 'toxicity', 'target_group']
@@ -116,7 +120,43 @@ def explain():
     print('Done')
 
 
+def explain():
+    # Load config args
+    args = argparse.Namespace(**yaml.load(open('configs/explainer.yml'), Loader=yaml.SafeLoader))
+
+    # Set up output dir
+    outfile = Path(os.path.join(args.aux_args['outdir'], dt_now()+'.jsonl'))
+    outfile.parent.mkdir(exist_ok=True)
+    print('Output will be written to:', outfile)
+
+    # Load target group names from file
+    tgt_groups_names = read_txt_lines(args.aux_args['target_group_names_fname'])
+
+    # Load data from file
+    data = load_data(**args.data_args)
+
+    for prompt_type in args.aux_args['prompt_types']:
+        be = Explainer(**args.model_args, prompt_type=prompt_type, dry_run=False)
+
+        results = []
+        for d in tqdm(data):
+            res = be.predict(
+                id = d['id'],
+                text = d['text'],
+                toxicity = d['toxicity'],
+                tgt_groups_names = tgt_groups_names,
+                tgt_groups_scores = d['target_group'],
+            )
+            output = {**d, **res, 'uid': f"{d['id']}::{prompt_type}"}
+            write_jsonl_into_file([output], outfile, mode='a', do_tqdm=False)
+            results.append(output)
+
+    print('Done')
+
+
 if __name__ == '__main__':
-    # binary()
     explain()
+
+    # Can ignore these for now...
+    # binary()
     # postprocess('data/binary/aaa-2022-06-10-09-51-35-all.jsonl')
