@@ -1,1 +1,22 @@
-# Using toxi env. To do...
+### For explaiNLG ###
+transformers==4.19.0
+torch==1.12.0+cu113 --extra-index-url https://download.pytorch.org/whl/cu113
+tensorboard==2.8.0
+
+# decoder-only
+accelerate
+datasets >= 1.8.0
+sentencepiece != 0.1.92
+protobuf==3.20.0
+sklearn
+
+# encoder-decoder
+datasets >= 1.8.0
+rouge-score
+nltk
+py7zr
+
+# eval
+bert-score==0.3.11
+
+### For the remainder of this repo ###
