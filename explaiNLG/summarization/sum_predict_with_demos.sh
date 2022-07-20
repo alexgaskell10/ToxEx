@@ -27,8 +27,8 @@ do
     # Obtain predictions
     python explaiNLG/summarization/run_summarization.py \
         --model_name_or_path $model \
-        --validation_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/demo-samples.csv \
-        --test_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/demo-samples.csv \
+        --validation_file $DATA_DIR/$task/demo-samples.csv \
+        --test_file $DATA_DIR/$task/demo-samples.csv \
         --output_dir $model/retry \
         --per_device_eval_batch_size 1 \
         --do_eval \
