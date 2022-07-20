@@ -697,7 +697,7 @@ def main():
         else data_args.val_max_target_length
     )
     num_beams = data_args.num_beams if data_args.num_beams is not None else training_args.generation_num_beams
-    # if training_args.do_eval:     # TODO
+    # if training_args.do_eval:
     #     logger.info("*** Evaluate ***")
     #     metrics = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
     #     max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)

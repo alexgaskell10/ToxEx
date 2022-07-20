@@ -1,3 +1,5 @@
+source explaiNLG/summarization/set_vars.sh
+
 export CUDA_VISIBLE_DEVICES=0
 task=hf_encdec_with_demos
 model_dir=/data2/ag/home/ag/experiments/gpt3-explanation-student

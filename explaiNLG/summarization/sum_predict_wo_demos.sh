@@ -1,3 +1,5 @@
+source explaiNLG/summarization/set_vars.sh
+
 export CUDA_VISIBLE_DEVICES=0
 task=hf_encdec_wo_demos
 model_dir=/data2/ag/home/ag/experiments/gpt3-explanation-student
@@ -9,7 +11,7 @@ do
     # # For obtaining inference time with bsz = 1
     # python explaiNLG/summarization/run_summarization.py \
     #     --model_name_or_path $model \
-    #     --validation_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/seed.csv \
+    #     --validation_file $DATA_DIR/$task/seed.csv \
     #     --max_eval_samples 20 \
     #     --output_dir $model/eval_predictions \
     #     --per_device_eval_batch_size 1 \
@@ -25,8 +27,8 @@ do
     # Obtain predictions
     python explaiNLG/summarization/run_summarization.py \
         --model_name_or_path $model \
-        --validation_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/demo-samples.csv \
-        --test_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/demo-samples.csv \
+        --validation_file $DATA_DIR/$task/demo-samples.csv \
+        --test_file $DATA_DIR/$task/demo-samples.csv \
         --output_dir $model/retry \
         --per_device_eval_batch_size 1 \
         --do_eval \

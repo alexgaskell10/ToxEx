@@ -1,3 +1,5 @@
+source explaiNLG/summarization/set_vars.sh
+
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 task=hf_encdec_with_demos
 
@@ -8,10 +10,10 @@ do
         --do_train \
         --do_eval \
         --do_predict \
-        --train_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/train.csv \
-        --validation_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/dev.csv \
-        --test_file /data2/ag/home/ag/datasets/data-aux/gpt3_explanations/$task/dev.csv \
-        --output_dir /data2/ag/home/ag/experiments/gpt3-explanation-student/$task'_'$model'_tmp' \
+        --train_file $DATA_DIR/$task/train.csv \
+        --validation_file $DATA_DIR/$task/dev.csv \
+        --test_file $DATA_DIR/$task/dev.csv \
+        --output_dir $OUT_DIR/$task'_'$model'_tmp' \
         --max_eval_samples 10000 \
         --per_device_train_batch_size 1 \
         --per_device_eval_batch_size 1 \
